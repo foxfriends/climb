@@ -45,10 +45,14 @@ pub fn render(tree: Tree) -> Result<(), Box<dyn std::error::Error>> {
                 .count();
             let table = Table
                 ::new(
-                    std::iter::repeat("").skip(vx).take(cols_to_show),
+                    std::iter::repeat("")
+                        .skip(vx)
+                        .take(cols_to_show),
                     tree.into_iter()
                         .skip(vy)
-                        .map(|row| row.skip(vx).map(|data| data.unwrap_or("")).take(cols_to_show))
+                        .map(|row| row.skip(vx)
+                            .map(|data| data.unwrap_or(""))
+                            .take(cols_to_show))
                         .map(Row::Data),
                 )
                 .widths(&widths[vx..vx + cols_to_show]);
