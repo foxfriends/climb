@@ -32,15 +32,26 @@ pub fn render(tree: Tree) -> Result<(), Box<dyn std::error::Error>> {
     terminal.clear()?;
     'outer: loop {
         terminal.draw(|mut f| {
+            let mut max_width = f.size().width;
+            let cols_to_show = widths
+                .iter()
+                .skip(x)
+                .take_while(|width| {
+                    let width = match width { Constraint::Length(width) => *width, _ => unreachable!() };
+                    let ok = max_width > width + 1;
+                    max_width = max_width.saturating_sub(width + 1);
+                    ok
+                })
+                .count();
             let table = Table
                 ::new(
-                    std::iter::repeat("").skip(x).take(w),
+                    std::iter::repeat("").skip(x).take(cols_to_show),
                     tree.into_iter()
                         .skip(y)
-                        .map(|row| row.skip(x).map(|data| data.unwrap_or("")))
+                        .map(|row| row.skip(x).map(|data| data.unwrap_or("")).take(cols_to_show))
                         .map(Row::Data),
                 )
-                .widths(&widths[x..]);
+                .widths(&widths[x..x + cols_to_show]);
             f.render_widget(table, f.size());
         })?;
         loop {
