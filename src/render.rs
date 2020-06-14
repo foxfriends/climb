@@ -1,3 +1,4 @@
+use std::fs::File;
 use unicode_width::UnicodeWidthStr;
 use termion::raw::IntoRawMode as _;
 use termion::event::Key;
@@ -21,7 +22,7 @@ pub fn render(tree: Tree) -> Result<(), Box<dyn std::error::Error>> {
         .map(Constraint::Length)
         .collect::<Vec<_>>();
 
-    let mut keys = std::io::stdin().keys();
+    let mut keys = File::open("/dev/tty")?.keys();
     let stdout = std::io::stdout().into_raw_mode()?;
     let backend = tui::backend::TermionBackend::new(stdout);
     let mut terminal = tui::Terminal::new(backend)?;
