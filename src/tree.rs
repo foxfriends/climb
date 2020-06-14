@@ -32,7 +32,7 @@ impl From<Sexp> for Tree {
                     _ => {
                         Tree {
                             label: String::from("<···>"),
-                            children: sexps.into_iter().skip(1).map(Into::into).collect(),
+                            children: sexps.into_iter().map(Into::into).collect(),
                         }
                     }
                 }
