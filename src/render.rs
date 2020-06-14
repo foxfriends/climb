@@ -28,14 +28,14 @@ pub fn render(tree: Tree) -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = tui::Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
-    let (mut x, mut y) = (0, 0);
+    let (mut vx, mut vy) = (0, 0);
     terminal.clear()?;
     'outer: loop {
         terminal.draw(|mut f| {
             let mut max_width = f.size().width;
             let cols_to_show = widths
                 .iter()
-                .skip(x)
+                .skip(vx)
                 .take_while(|width| {
                     let width = match width { Constraint::Length(width) => *width, _ => unreachable!() };
                     let ok = max_width > width + 1;
@@ -45,28 +45,28 @@ pub fn render(tree: Tree) -> Result<(), Box<dyn std::error::Error>> {
                 .count();
             let table = Table
                 ::new(
-                    std::iter::repeat("").skip(x).take(cols_to_show),
+                    std::iter::repeat("").skip(vx).take(cols_to_show),
                     tree.into_iter()
-                        .skip(y)
-                        .map(|row| row.skip(x).map(|data| data.unwrap_or("")).take(cols_to_show))
+                        .skip(vy)
+                        .map(|row| row.skip(vx).map(|data| data.unwrap_or("")).take(cols_to_show))
                         .map(Row::Data),
                 )
-                .widths(&widths[x..x + cols_to_show]);
+                .widths(&widths[vx..vx + cols_to_show]);
             f.render_widget(table, f.size());
         })?;
         loop {
             match keys.next().transpose()? {
                 Some(Key::Left) | Some(Key::Char('h')) => {
-                    x = x.saturating_sub(1);
+                    vx = vx.saturating_sub(1);
                 }
                 Some(Key::Right) | Some(Key::Char('l')) => {
-                    x = usize::min(x + 1, w.saturating_sub(1));
+                    vx = usize::min(vx + 1, w.saturating_sub(1));
                 }
                 Some(Key::Up) | Some(Key::Char('k')) => {
-                    y = y.saturating_sub(1);
+                    vy = vy.saturating_sub(1);
                 }
                 Some(Key::Down) | Some(Key::Char('j')) => {
-                    y = usize::min(y + 1, h.saturating_sub(1));
+                    vy = usize::min(vy + 1, h.saturating_sub(1));
                 }
                 Some(Key::Char('q')) | None => break 'outer,
                 _ => continue,
